@@ -166,25 +166,43 @@ RCT_EXPORT_METHOD(lockToPortrait)
 
 RCT_EXPORT_METHOD(lockToLandscape)
 {
-  #if DEBUG
+#if DEBUG
     NSLog(@"Locked to Landscape");
-  #endif
-  UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
-  NSString *orientationStr = [self getSpecificOrientationStr:orientation];
-  if ([orientationStr isEqualToString:@"LANDSCAPE-LEFT"]) {
-    [Orientation setOrientation:UIInterfaceOrientationMaskLandscape];
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^ {
-      [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-      [[UIDevice currentDevice] setValue:[NSNumber numberWithInteger: UIInterfaceOrientationLandscapeRight] forKey:@"orientation"];
-    }];
-  } else {
-    [Orientation setOrientation:UIInterfaceOrientationMaskLandscape];
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^ {
-      [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-      [[UIDevice currentDevice] setValue:[NSNumber numberWithInteger: UIInterfaceOrientationLandscapeLeft] forKey:@"orientation"];
-    }];
-  }
+#endif
+  
+    UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+    NSString *orientationStr = [self getSpecificOrientationStr:orientation];
+    if ([orientationStr isEqualToString:@"LANDSCAPE-LEFT"]) {
+        [Orientation setOrientation:UIInterfaceOrientationMaskLandscape];
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^ {
+            [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+            if(@available(iOS 16.0, *)) {
+                UIScene *windowScene = [[[UIApplication sharedApplication] connectedScenes] anyObject];
+                UIWindowSceneGeometryPreferencesIOS *preferences = nil;
+                preferences = [[UIWindowSceneGeometryPreferencesIOS alloc] initWithInterfaceOrientations:UIInterfaceOrientationMaskLandscapeRight];
+                [(UIWindowScene *)windowScene requestGeometryUpdateWithPreferences:preferences errorHandler:^(NSError * _Nonnull error) {
+                }];
+            }else{
+                [[UIDevice currentDevice] setValue:[NSNumber numberWithInteger: UIInterfaceOrientationLandscapeRight] forKey:@"orientation"];
+            }
+        }];
+    } else {
+        [Orientation setOrientation:UIInterfaceOrientationMaskLandscape];
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^ {
+            [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+            if(@available(iOS 16.0, *)) {
+                UIScene *windowScene = [[[UIApplication sharedApplication] connectedScenes] anyObject];
+                UIWindowSceneGeometryPreferencesIOS *preferences = nil;
+                preferences = [[UIWindowSceneGeometryPreferencesIOS alloc] initWithInterfaceOrientations:UIInterfaceOrientationMaskLandscapeLeft];
+                [(UIWindowScene *)windowScene requestGeometryUpdateWithPreferences:preferences errorHandler:^(NSError * _Nonnull error) {
+                }];
+            }else{
+                [[UIDevice currentDevice] setValue:[NSNumber numberWithInteger: UIInterfaceOrientationLandscapeLeft] forKey:@"orientation"];
+            }
+        }];
+    }
 }
+
 
 RCT_EXPORT_METHOD(lockToLandscapeLeft)
 {
